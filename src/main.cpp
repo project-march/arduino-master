@@ -1,11 +1,18 @@
 #include <Arduino.h>
+#include <ros.h>
+
+namespace pins
+{
+}
+
+ros::NodeHandle nh;
 
 void setup()
 {
-  // put your setup code here, to run once:
+  nh.initNode();
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
+  nh.spinOnce();
 }
