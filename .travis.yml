@@ -1,0 +1,26 @@
+os: linux
+language: python
+
+addons:
+  apt:
+    packages:
+      - clang-format
+
+notifications:
+  slack:
+    secure: 0QGwPYYAwJN7YnNJTvAic53Ib9UyXrQ4qidH8y4TT9g6O5z2W3tAnP4BMbSZv+YnkOIrKVe3lZx2KiCII6cG+McVHbEpeJhjLyILKThZuEsCQz1hbn+cwhaFA429e/HPdYU/ILbLX4slVP3UNs0PluE/FQN4zLVpT8O3QFoWUvD3C8lfEZEpeUgTGXET5oAhKCJK/jNLmJq20LuIrePosir4Yf5NYHxEuaeSCVxA+K6r01BKAK2KQsmnbocGGdU9VTGIoHeqyFl7YUFEybgY3lYBl44EaJelfHsHxSh2nidNhddeOERfaMWdX1S0zyexFXZ0mQY2gRPYZYFcwZHyf7wOJ3PnpKkYRLH/1gnZyL1L+av08YrS5unQbjNq7mPY7xJ/yYrM2sAzDaaZPJM8Vzi3XtZ2uTgZHehcNNmlHK0aXerGFm0UD7o0I3B9m6C4iQFcfPDlf/lAyrGT7A/qQsBsA1u1HtdOVha/GdJoUWynwopA+ZAKrbyy1Q32QjLiwqzXigw3FXVSFrX+HhnZ6puu37QGp5aIlXAnNuF+iakG/sgGb27S68abcH8Q/LBgspoDYPzJn1iupe+HEzFrTShKQ5IRux8KsB4O5WKGl4nWVjA8667AWQJYvCtoQPHK1AOqGFHYcEaXAwiFzTCzXozGS+BhqtYplmkzaO6RzVI=
+  email: false
+
+cache:
+  directories:
+    - "~/.platformio"
+
+install:
+  - pip install -U platformio
+  - platformio update
+  - platformio lib install
+
+script:
+  - platformio run
+  - platformio check --fail-on-defect high
+  - wget -qO- https://raw.githubusercontent.com/Sarcasm/run-clang-format/master/run-clang-format.py | python - -r src include test
