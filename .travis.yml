@@ -23,4 +23,4 @@ install:
 script:
   - platformio run
   - platformio check --fail-on-defect high
-  - wget -qO- https://raw.githubusercontent.com/Sarcasm/run-clang-format/master/run-clang-format.py | python - -r src include test
+  - wget -qO- https://raw.githubusercontent.com/Sarcasm/run-clang-format/master/run-clang-format.py | python - -r src
