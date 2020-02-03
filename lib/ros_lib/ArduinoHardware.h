@@ -1,14 +1,7 @@
 #ifndef ROS_ARDUINO_HARDWARE_H_
 #define ROS_ARDUINO_HARDWARE_H_
 
-#if ARDUINO>=100
-  #include <Arduino.h>
-#else
-  #include <WProgram.h>
-#endif
-
-#include <HardwareSerial.h>
-#define SERIAL_CLASS HardwareSerial
+#include <Arduino.h>
 
 class ArduinoHardware
 {
@@ -53,7 +46,7 @@ class ArduinoHardware
     }
 
   protected:
-    SERIAL_CLASS* iostream;
+    Serial_* iostream;
     long baud_;
 };
 
