@@ -4,8 +4,8 @@
 
 namespace pins
 {
-const uint8_t rgb_led = 1;
-const uint8_t emergency_button = 2;
+const uint8_t rgb_led = 5;
+const uint8_t emergency_button = 0;
 }  // namespace pins
 
 ros::NodeHandle nh;
@@ -20,7 +20,7 @@ void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(pins::rgb_led, OUTPUT);
-  pinMode(pins::emergency_button, INPUT_PULLUP);
+  pinMode(pins::emergency_button, INPUT);
 
   hv_enabled = digitalRead(pins::emergency_button);
   digitalWrite(LED_BUILTIN, hv_enabled);
