@@ -18,11 +18,11 @@ ros::Publisher button("/march/emergency_button/pressed", &button_msg);
 // High voltage is enabled when HIGH and disabled when LOW
 int hv_enabled = LOW;
 
-void writeColor(int red, int green, int blue)
+void writeColor(uint8_t red, uint8_t green, uint8_t blue)
 {
-  analogWrite(pins::RED_LED, red);
-  analogWrite(pins::GREEN_LED, green);
-  analogWrite(pins::BLUE_LED, blue);
+  analogWrite(pins::RED_LED, 255 - red);
+  analogWrite(pins::GREEN_LED, 255 - green);
+  analogWrite(pins::BLUE_LED, 255 - blue);
 }
 
 void setup()
