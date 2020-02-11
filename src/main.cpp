@@ -4,7 +4,9 @@
 
 namespace pins
 {
-const uint8_t RBG_LED = 5;
+const uint8_t RED_LED = 9;
+const uint8_t GREEN_LED = 10;
+const uint8_t BLUE_LED = 11;
 const uint8_t E_BUTTON = 0;
 }  // namespace pins
 
@@ -16,10 +18,19 @@ ros::Publisher button("/march/emergency_button/pressed", &button_msg);
 // High voltage is enabled when HIGH and disabled when LOW
 int hv_enabled = LOW;
 
+void writeColor(int red, int green, int blue)
+{
+  analogWrite(pins::RED_LED, red);
+  analogWrite(pins::GREEN_LED, green);
+  analogWrite(pins::BLUE_LED, blue);
+}
+
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(pins::RBG_LED, OUTPUT);
+  pinMode(pins::RED_LED, OUTPUT);
+  pinMode(pins::GREEN_LED, OUTPUT);
+  pinMode(pins::BLUE_LED, OUTPUT);
   pinMode(pins::E_BUTTON, INPUT);
 
   hv_enabled = digitalRead(pins::E_BUTTON);
