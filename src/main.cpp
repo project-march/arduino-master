@@ -47,6 +47,8 @@ void setup()
   hv_enabled = digitalRead(pins::E_BUTTON);
   digitalWrite(LED_BUILTIN, hv_enabled);
 
+  writeColor(0, 0, 0);
+
   nh.initNode();
   nh.advertise(button_pub);
   nh.subscribe(color_sub);
