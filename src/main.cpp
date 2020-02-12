@@ -65,5 +65,9 @@ void loop()
     digitalWrite(LED_BUILTIN, hv_enabled);
   }
 
+  if (!nh.connected())
+  {
+    writeColor(0, 0, 0);
+  }
   nh.spinOnce();
 }
