@@ -19,6 +19,7 @@ namespace march_shared_resources
       _type_type type;
       typedef const char* _gait_name_type;
       _gait_name_type gait_name;
+      enum { UNKNOWN =  -1 };
       enum { STOP =  0 };
       enum { GAIT =  1 };
       enum { PAUSE =  2 };
@@ -77,7 +78,7 @@ namespace march_shared_resources
     }
 
     const char * getType(){ return "march_shared_resources/GaitInstruction"; };
-    const char * getMD5(){ return "f655c02301e6cc940112aec0256d56ae"; };
+    const char * getMD5(){ return "c548bd1201c18293dcff8514a06fc253"; };
 
   };
 
