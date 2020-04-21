@@ -4,6 +4,10 @@
 #include <ros.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/ColorRGBA.h>
+#include <std_msgs/String.h>
+
+#include <march_shared_resources/Error.h>
+#include <march_shared_resources/GaitInstructionResponse.h>
 
 namespace pins
 {
@@ -22,10 +26,15 @@ const Color ACTIVE(0, 255, 0);
 }  // namespace colors
 
 void setColorCallback(const std_msgs::ColorRGBA& color);
-void writeColor(uint8_t red, uint8_t green, uint8_t blue);
+void errorCallback(const march_shared_resources::Error& error);
+void instructionResponseCallback(const march_shared_resources::GaitInstructionResponse& response);
+void currentGaitCallback(const std_msgs::String& gait);
+void writeColor(Color color);
 
 // High voltage is enabled when HIGH and disabled when LOW
 int hv_enabled = LOW;
+// True when a gait is being executed, false otherwise
+bool active = false;
 
 ros::NodeHandle nh;
 
@@ -33,10 +42,36 @@ std_msgs::Bool button_msg;
 ros::Publisher button_pub("/march/emergency_button/pressed", &button_msg);
 
 ros::Subscriber<std_msgs::ColorRGBA> color_sub("/march/rgb_led/set_color", &setColorCallback);
+ros::Subscriber<march_shared_resources::Error> error_sub("/march/error", &errorCallback);
+ros::Subscriber<march_shared_resources::GaitInstructionResponse> response_sub("/march/input_device/"
+                                                                              "instruction_response",
+                                                                              &instructionResponseCallback);
+ros::Subscriber<std_msgs::String> current_gait_sub("/march/gait/current", &currentGaitCallback);
 
 void setColorCallback(const std_msgs::ColorRGBA& color)
 {
-  writeColor(color.r, color.g, color.b);
+  writeColor(Color(color.r, color.g, color.b));
+}
+
+void errorCallback(const march_shared_resources::Error& /* error */)
+{
+  active = false;
+  writeColor(colors::ERROR);
+}
+
+void instructionResponseCallback(const march_shared_resources::GaitInstructionResponse& response)
+{
+  if (response.result == response.GAIT_FINISHED)
+  {
+    active = false;
+    writeColor(colors::IDLE);
+  }
+}
+
+void currentGaitCallback(const std_msgs::String& /* gait */)
+{
+  active = true;
+  writeColor(colors::ACTIVE);
 }
 
 void writeColor(Color color)
@@ -62,6 +97,9 @@ void setup()
   nh.initNode();
   nh.advertise(button_pub);
   nh.subscribe(color_sub);
+  nh.subscribe(error_sub);
+  nh.subscribe(response_sub);
+  nh.subscribe(current_gait_sub);
 }
 
 void loop()
@@ -78,6 +116,10 @@ void loop()
   if (!nh.connected())
   {
     writeColor(colors::OFF);
+  }
+  else if (!active)
+  {
+    writeColor(colors::IDLE);
   }
   nh.spinOnce();
 }
