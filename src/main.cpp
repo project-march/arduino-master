@@ -11,6 +11,7 @@
 
 namespace pins
 {
+const uint8_t RGB_LED_OUTPUT = 8;
 const uint8_t RED_LED = 9;
 const uint8_t GREEN_LED = 10;
 const uint8_t BLUE_LED = 11;
@@ -84,10 +85,13 @@ void writeColor(Color color)
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(pins::RGB_LED_OUTPUT, OUTPUT);
   pinMode(pins::RED_LED, OUTPUT);
   pinMode(pins::GREEN_LED, OUTPUT);
   pinMode(pins::BLUE_LED, OUTPUT);
   pinMode(pins::E_BUTTON, INPUT);
+
+  digitalWrite(pins::RGB_LED_OUTPUT, HIGH);
 
   hv_enabled = digitalRead(pins::E_BUTTON);
   digitalWrite(LED_BUILTIN, hv_enabled);
