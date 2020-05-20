@@ -35,7 +35,7 @@ void writeColor(Color color);
 // High voltage is enabled when HIGH and disabled when LOW
 int hv_enabled = LOW;
 // True when a gait is being executed, false otherwise
-bool active = false;
+bool is_connected = false;
 
 ros::NodeHandle nh;
 
@@ -56,7 +56,6 @@ void setColorCallback(const std_msgs::ColorRGBA& color)
 
 void errorCallback(const march_shared_resources::Error& /* error */)
 {
-  active = false;
   writeColor(colors::ERROR);
 }
 
@@ -64,14 +63,12 @@ void instructionResponseCallback(const march_shared_resources::GaitInstructionRe
 {
   if (response.result == response.GAIT_FINISHED)
   {
-    active = false;
     writeColor(colors::IDLE);
   }
 }
 
 void currentGaitCallback(const std_msgs::String& /* gait */)
 {
-  active = true;
   writeColor(colors::ACTIVE);
 }
 
@@ -119,10 +116,12 @@ void loop()
 
   if (!nh.connected())
   {
+    is_connected = false;
     writeColor(colors::OFF);
   }
-  else if (!active)
+  else if (!is_connected)
   {
+    is_connected = true;
     writeColor(colors::IDLE);
   }
   nh.spinOnce();
