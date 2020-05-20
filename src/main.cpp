@@ -1,21 +1,41 @@
+#include "color.h"
+
 #include <Arduino.h>
 #include <ros.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/ColorRGBA.h>
+#include <std_msgs/String.h>
+
+#include <march_shared_resources/Error.h>
+#include <march_shared_resources/GaitInstructionResponse.h>
 
 namespace pins
 {
-const uint8_t RED_LED = 9;
-const uint8_t GREEN_LED = 10;
+const uint8_t RGB_LED_OUTPUT = 8;
+const uint8_t RED_LED = 10;
+const uint8_t GREEN_LED = 9;
 const uint8_t BLUE_LED = 11;
 const uint8_t E_BUTTON = 0;
 }  // namespace pins
 
+namespace colors
+{
+const Color OFF(0, 0, 0);
+const Color ERROR(255, 0, 0);
+const Color IDLE(0, 0, 255);
+const Color ACTIVE(0, 255, 0);
+}  // namespace colors
+
 void setColorCallback(const std_msgs::ColorRGBA& color);
-void writeColor(uint8_t red, uint8_t green, uint8_t blue);
+void errorCallback(const march_shared_resources::Error& error);
+void instructionResponseCallback(const march_shared_resources::GaitInstructionResponse& response);
+void currentGaitCallback(const std_msgs::String& gait);
+void writeColor(Color color);
 
 // High voltage is enabled when HIGH and disabled when LOW
 int hv_enabled = LOW;
+// True when a gait is being executed, false otherwise
+bool is_connected = false;
 
 ros::NodeHandle nh;
 
@@ -23,35 +43,64 @@ std_msgs::Bool button_msg;
 ros::Publisher button_pub("/march/emergency_button/pressed", &button_msg);
 
 ros::Subscriber<std_msgs::ColorRGBA> color_sub("/march/rgb_led/set_color", &setColorCallback);
+ros::Subscriber<march_shared_resources::Error> error_sub("/march/error", &errorCallback);
+ros::Subscriber<march_shared_resources::GaitInstructionResponse> response_sub("/march/input_device/"
+                                                                              "instruction_response",
+                                                                              &instructionResponseCallback);
+ros::Subscriber<std_msgs::String> current_gait_sub("/march/gait/current", &currentGaitCallback);
 
 void setColorCallback(const std_msgs::ColorRGBA& color)
 {
-  writeColor(color.r, color.g, color.b);
+  writeColor(Color(color.r, color.g, color.b));
 }
 
-void writeColor(uint8_t red, uint8_t green, uint8_t blue)
+void errorCallback(const march_shared_resources::Error& /* error */)
 {
-  analogWrite(pins::RED_LED, 255 - red);
-  analogWrite(pins::GREEN_LED, 255 - green);
-  analogWrite(pins::BLUE_LED, 255 - blue);
+  writeColor(colors::ERROR);
+}
+
+void instructionResponseCallback(const march_shared_resources::GaitInstructionResponse& response)
+{
+  if (response.result == response.GAIT_FINISHED)
+  {
+    writeColor(colors::IDLE);
+  }
+}
+
+void currentGaitCallback(const std_msgs::String& /* gait */)
+{
+  writeColor(colors::ACTIVE);
+}
+
+void writeColor(Color color)
+{
+  analogWrite(pins::RED_LED, 255 - color.r);
+  analogWrite(pins::GREEN_LED, 255 - color.g);
+  analogWrite(pins::BLUE_LED, 255 - color.b);
 }
 
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(pins::RGB_LED_OUTPUT, OUTPUT);
   pinMode(pins::RED_LED, OUTPUT);
   pinMode(pins::GREEN_LED, OUTPUT);
   pinMode(pins::BLUE_LED, OUTPUT);
   pinMode(pins::E_BUTTON, INPUT);
 
+  digitalWrite(pins::RGB_LED_OUTPUT, HIGH);
+
   hv_enabled = digitalRead(pins::E_BUTTON);
   digitalWrite(LED_BUILTIN, hv_enabled);
 
-  writeColor(0, 0, 0);
+  writeColor(colors::OFF);
 
   nh.initNode();
   nh.advertise(button_pub);
   nh.subscribe(color_sub);
+  nh.subscribe(error_sub);
+  nh.subscribe(response_sub);
+  nh.subscribe(current_gait_sub);
 }
 
 void loop()
@@ -67,7 +116,13 @@ void loop()
 
   if (!nh.connected())
   {
-    writeColor(0, 0, 0);
+    is_connected = false;
+    writeColor(colors::OFF);
+  }
+  else if (!is_connected)
+  {
+    is_connected = true;
+    writeColor(colors::IDLE);
   }
   nh.spinOnce();
 }
