@@ -12,8 +12,8 @@
 namespace pins
 {
 const uint8_t RGB_LED_OUTPUT = 8;
-const uint8_t RED_LED = 9;
-const uint8_t GREEN_LED = 10;
+const uint8_t RED_LED = 10;
+const uint8_t GREEN_LED = 9;
 const uint8_t BLUE_LED = 11;
 const uint8_t E_BUTTON = 0;
 }  // namespace pins
