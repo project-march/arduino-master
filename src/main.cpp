@@ -4,10 +4,9 @@
 #include <ros.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/ColorRGBA.h>
-#include <std_msgs/String.h>
 
+#include <march_shared_resources/CurrentState.h>
 #include <march_shared_resources/Error.h>
-#include <march_shared_resources/GaitInstructionResponse.h>
 
 namespace pins
 {
@@ -28,8 +27,7 @@ const Color ACTIVE(0, 255, 0);
 
 void setColorCallback(const std_msgs::ColorRGBA& color);
 void errorCallback(const march_shared_resources::Error& error);
-void instructionResponseCallback(const march_shared_resources::GaitInstructionResponse& response);
-void currentGaitCallback(const std_msgs::String& gait);
+void currentStateCallback(const march_shared_resources::CurrentState& state);
 void writeColor(Color color);
 
 // High voltage is enabled when HIGH and disabled when LOW
@@ -44,10 +42,8 @@ ros::Publisher button_pub("/march/emergency_button/pressed", &button_msg);
 
 ros::Subscriber<std_msgs::ColorRGBA> color_sub("/march/rgb_led/set_color", &setColorCallback);
 ros::Subscriber<march_shared_resources::Error> error_sub("/march/error", &errorCallback);
-ros::Subscriber<march_shared_resources::GaitInstructionResponse> response_sub("/march/input_device/"
-                                                                              "instruction_response",
-                                                                              &instructionResponseCallback);
-ros::Subscriber<std_msgs::String> current_gait_sub("/march/gait/current", &currentGaitCallback);
+ros::Subscriber<march_shared_resources::CurrentState> current_state_sub("/march/gait_selection/current_state",
+                                                                        &currentStateCallback);
 
 void setColorCallback(const std_msgs::ColorRGBA& color)
 {
@@ -59,17 +55,16 @@ void errorCallback(const march_shared_resources::Error& /* error */)
   writeColor(colors::ERROR);
 }
 
-void instructionResponseCallback(const march_shared_resources::GaitInstructionResponse& response)
+void currentStateCallback(const march_shared_resources::CurrentState& state)
 {
-  if (response.result == response.GAIT_FINISHED)
+  if (state.state_type == state.IDLE)
   {
     writeColor(colors::IDLE);
   }
-}
-
-void currentGaitCallback(const std_msgs::String& /* gait */)
-{
-  writeColor(colors::ACTIVE);
+  else if (state.state_type == state.GAIT)
+  {
+    writeColor(colors::ACTIVE);
+  }
 }
 
 void writeColor(Color color)
@@ -99,8 +94,7 @@ void setup()
   nh.advertise(button_pub);
   nh.subscribe(color_sub);
   nh.subscribe(error_sub);
-  nh.subscribe(response_sub);
-  nh.subscribe(current_gait_sub);
+  nh.subscribe(current_state_sub);
 }
 
 void loop()
